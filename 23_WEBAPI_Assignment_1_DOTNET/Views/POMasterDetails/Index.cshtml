@@ -1,0 +1,294 @@
+﻿@model IEnumerable<_23_WEBAPI_Assignment_1_DOTNET.PODetailModel>
+
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>Index</title>
+</head>
+<body>
+    <br />
+    <br />
+    @if (Model != null)
+    {
+        <table id="tblCustomers" class="table" cellpadding="0" cellspacing="0">
+            <tr>
+                <th style="width:100px">PO Number</th>
+                <th style="width:150px">IT Code</th>
+                <th style="width:150px">Quantity</th>
+                <th style="width:150px"></th>
+            </tr>
+
+            @foreach (PODetailModel customer in Model)
+            {
+                <tr>
+                    <td class="CustomerId">
+                        <span>@customer.PONO</span>
+                    </td>
+                    <td class="Name">
+                        <span>@customer.ITCODE</span>
+                    </td>
+                    <td class="Country">
+                        <span>@customer.QTY</span>
+                        <input type="text" value="@customer.QTY" style="display:none" />
+                    </td>
+                    <td>
+                        <a class="Edit" href="javascript:;">Edit</a>
+                        <a class="Update" href="javascript:;" style="display:none">Update</a>
+                        <a class="Cancel" href="javascript:;" style="display:none">Cancel</a>
+                        <a class="Delete" href="javascript:;">Delete</a>
+                    </td>
+                </tr>
+            }
+
+        </table>
+    }
+    <table border="0" cellpadding="0" cellspacing="0">
+        <tr>
+            <td style="width: 150px">
+                PO No<br />
+                <select id="ddlPODetails" style="width:140px"></select>
+            </td>
+            <td style="width: 150px">
+                IT Code<br />
+                <select id="ddlITCode" style="width:140px"></select>
+            </td>
+            <td style="width: 150px">
+                Quantity<br />
+                <input type="text" id="txtQuanity" style="width:140px" />
+            </td>
+            <td style="width: 200px">
+                <br />
+                <input type="button" id="btnAdd" value="Add" />
+            </td>
+        </tr>
+    </table>
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+    <script type="text/javascript" src="http://ajax.cdnjs.com/ajax/libs/json2/20110223/json2.js"></script>
+    <script type="text/javascript">
+        $(function () {
+
+            var ddlCustomers1 = $("#ddlPODetails");
+            ddlCustomers1.empty().append('<option selected="selected" value="0" disabled = "disabled">Loading.....</option>');
+            $.ajax({
+                type: "GET",
+                url: "http://localhost:61883/api/POMasterList",
+                data: '{}',
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function (response) {
+                    ddlCustomers1.empty().append('<option selected="selected" value="0">Please select</option>');
+                    $.each(response, function (i) {
+                        ddlCustomers1.append($("<option></option>").val(response[i].PONO).html(response[i].PONO));
+                    });
+                },
+                failure: function (response) {
+                    alert(response.responseText);
+                },
+                error: function (response) {
+                    alert(response.responseText);
+                }
+            });
+
+            var ddlCustomers = $("#ddlITCode");
+            ddlCustomers.empty().append('<option selected="selected" value="0" disabled = "disabled">Loading.....</option>');
+            $.ajax({
+                type: "GET",
+                url: "http://localhost:61883/api/GetAllItemsList",
+                data: '{}',
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function (response) {
+                    ddlCustomers.empty().append('<option selected="selected" value="0">Please select</option>');
+                    $.each(response, function (i) {
+                        ddlCustomers.append($("<option></option>").val(response[i].ITCODE).html(response[i].ITDESC));
+                    });
+                },
+                failure: function (response) {
+                    alert(response.responseText);
+                },
+                error: function (response) {
+                    alert(response.responseText);
+                }
+            });
+
+
+            //Remove the dummy row if data present.
+            //if ($("#tblCustomers tr").length > 2) {
+            //    $("#tblCustomers tr:eq(1)").remove();
+            //} else {
+            //    var row = $("#tblCustomers tr:last-child");
+            //    row.find(".Edit").hide();
+            //    row.find(".Delete").hide();
+            //    row.find("span").html('&nbsp;');
+            //}
+        });
+
+        //Add event handler.
+        $("body").on("click", "#btnAdd", function () {
+            var txtName = $("#ddlPODetails");
+            var txtCountry = $("#ddlITCode");
+            var txtQuantity = $("#txtQuanity");
+
+            var _podetails = {};
+            _podetails.PONO = txtName.val();
+            _podetails.ITCODE = txtCountry.val();
+            _podetails.QTY = txtQuantity.val();
+
+            $.ajax({
+                type: "POST",
+                url: "http://localhost:61883/api/PODetail",
+                data: JSON.stringify(_podetails),
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function (response) {
+                    AppendRow(txtName.val(), txtCountry.val(), txtQuantity.val());
+                },
+                failure: function (response) {
+                    alert(response.responseText);
+                },
+                error: function (response) {
+                    AppendRow(txtName.val(), txtCountry.val(), txtQuantity.val());
+                    txtName.val('');
+                    txtCountry.val('');
+                    txtQuantity.val('');
+                }
+            });
+        });
+
+
+        $("body").on("click", "#tblCustomers .Edit", function () {
+            var row = $(this).closest("tr");
+            $("td", row).each(function () {
+                if ($(this).find("input").length > 0) {
+                    $(this).find("input").show();
+                    $(this).find("span").hide();
+                }
+            });
+            row.find(".Update").show();
+            row.find(".Cancel").show();
+            row.find(".Delete").hide();
+            $(this).hide();
+        });
+
+        //Update event handler.
+        $("body").on("click", "#tblCustomers .Update", function () {
+            var row = $(this).closest("tr");
+            $("td", row).each(function () {
+                if ($(this).find("input").length > 0) {
+                    var span = $(this).find("span");
+                    var input = $(this).find("input");
+                    span.html(input.val());
+                    span.show();
+                    input.hide();
+                }
+            });
+            row.find(".Edit").show();
+            row.find(".Delete").show();
+            row.find(".Cancel").hide();
+            $(this).hide();
+            debugger;
+            var _podetails = {};
+            _podetails.PONO = row.find(".CustomerId").find("span").html();
+            _podetails.ITCODE = row.find(".Name").find("span").html();
+            _podetails.QTY = row.find(".Country").find("span").html();
+            $.ajax({
+                type: "PUT",
+                url: "http://localhost:61883/api/POMasterEdit",
+                data: JSON.stringify(_podetails),
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function (response) {
+                    alert('Su')
+                },
+                failure: function (response) {
+                    alert(response.responseText);
+                },
+                error: function (response) {
+                    alert('fa')
+                }
+            });
+        });
+
+        $("body").on("click", "#tblCustomers .Cancel", function () {
+            var row = $(this).closest("tr");
+            $("td", row).each(function () {
+                if ($(this).find("input").length > 0) {
+                    var span = $(this).find("span");
+                    var input = $(this).find("input");
+                    input.val(span.html());
+                    span.show();
+                    input.hide();
+                }
+            });
+            row.find(".Edit").show();
+            row.find(".Delete").show();
+            row.find(".Update").hide();
+            $(this).hide();
+        });
+
+        $("body").on("click", "#tblCustomers .Delete", function () {
+            if (confirm("Do you want to delete this row?")) {
+                var row = $(this).closest("tr");
+                var PONO = row.find(".CustomerId").find("span").html();
+                var ITCODE = row.find(".Name").find("span").html();
+                $.ajax({
+                    type: "DELETE",
+                    url: "http://localhost:61883/api/POMasterDelete/" + PONO + "/" + ITCODE,
+                    //data: JSON.stringify(_customer),
+                    contentType: "application/json; charset=utf-8",
+                    dataType: "json",
+                    success: function (response) {
+                        if ($("#tblCustomers tr").length > 2) {
+                            row.remove();
+                        } else {
+                            row.find(".Edit").hide();
+                            row.find(".Delete").hide();
+                            row.find("span").html('&nbsp;');
+                        }
+                    },
+                    failure: function (response) {
+                        alert(response.responseText);
+                    },
+                    error: function (response) {
+                        if ($("#tblCustomers tr").length > 2) {
+                            row.remove();
+                        } else {
+                            row.find(".Edit").hide();
+                            row.find(".Delete").hide();
+                            row.find("span").html('&nbsp;');
+                        }
+                    }
+                });
+            }
+        });
+
+        function AppendRow(customerId, name, country) {
+
+            var row = $("#tblCustomers tr:last-child");
+            if ($("#tblCustomers tr:last-child span").eq(0).html() != "&nbsp;") {
+                row = row.clone();
+            }
+            //Bind CustomerId.
+            $(".CustomerId", row).find("span").html(customerId);
+
+            //Bind Name.
+            $(".Name", row).find("span").html(name);
+
+            //Bind Country.
+            $(".Country", row).find("span").html(country);
+            //$(".Country", row).find("input").val(country);
+
+            row.find(".Edit").show();
+            row.find(".Delete").show();
+
+            $("#tblCustomers").append(row);
+        };
+    </script>
+</body>
+</html>

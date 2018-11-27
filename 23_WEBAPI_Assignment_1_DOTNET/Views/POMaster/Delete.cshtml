@@ -1,0 +1,50 @@
+﻿@model _23_WEBAPI_Assignment_1_DOTNET.POMasterModel
+
+@{
+    ViewBag.Title = "Delete";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Delete</h2>
+
+<h3>Are you sure you want to delete this?</h3>
+<div>
+    <h4>POMasterModel</h4>
+    <hr />
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.PONO)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.PONO)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.PODATE)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.PODATE)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.SUPLNO)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.SUPLNO)
+        </dd>
+
+
+    </dl>
+
+    @using (Html.BeginForm()) {
+        @Html.AntiForgeryToken()
+
+        <div class="form-actions no-color">
+            <input type="submit" value="Delete" class="btn btn-default" /> |
+            @Html.ActionLink("Back to List", "Index")
+        </div>
+    }
+</div>

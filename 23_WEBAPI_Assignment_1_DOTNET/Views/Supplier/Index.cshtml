@@ -1,0 +1,208 @@
+﻿
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+<script src="https://code.jquery.com/jquery-3.2.1.min.js"
+        integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+        crossorigin="anonymous"></script>
+
+<script>
+
+
+    $(document).ready(function () {
+        getSupplier();
+    });
+
+    var supplier = {
+        supplierno: "",
+        suppliername: "",
+        supplieraddress: ""
+    }
+
+    function getSupplier() {
+        $.ajax({
+            url: '/api/supplier',
+            type: 'GET',
+            dataType: 'json',
+            success: function (suppliers) {
+                SupplierList(suppliers);
+            },
+            error: function (request, message, error) {
+                handleException(request, message, error);
+            }
+        });
+    }
+
+    function SupplierList(suppliers) {
+        // Iterate over the collection of data
+        $("#supplierTable tbody").remove();
+        $.each(suppliers, function (index, supplier) {
+            SupplierAddRow(supplier);
+        });
+    }
+
+    function SupplierAddRow(supplier) {
+        // First check if a <tbody> tag exists, add one if not
+        if ($("#supplierTable tbody").length == 0) {
+            $("#supplierTable").append("<tbody></tbody>");
+        }
+
+        // Append row to <table>
+        $("#supplierTable tbody").append(
+          SupplierBuildTableRow(supplier));
+    }
+
+    // Build a <tr> for a row of table data
+    function SupplierBuildTableRow(supplier) {
+        var newRow = "<tr>" +
+          "<td><input   class='input-supplierno' type='text' value='" + supplier.SUPLNO + "'/></td>" +
+          "<td><input  class='input-suppliername'  type='text' value='" + supplier.SUPLNAME + "'/></td>" +
+          "<td><input  class='input-supplieraddress' type='text' value='" + supplier.SUPLADDR + "'/></td>" +
+          "<td>" +
+          "<button type='button'  class='btn-success'" +
+          "onclick='SupplierUpdate(this);' " +
+          "class='btn btn-default' " +
+          "data-supplierno='" + supplier.SUPLNO + "' " +
+          "data-suppliername='" + supplier.SUPLNAME + "' " +
+          "data-supplieraddress='" + supplier.SUPLADDR + "' " +
+          ">" +
+          "<span class='glyphicon glyphicon-edit' /> Update" +
+          "</button> " +
+          " <button type='button' class='btn-danger' " +
+          "onclick='DeleteSupplier(this);'" +
+          "class='btn btn-default' " +
+          "data-supplierno='" + supplier.SUPLNO + "'>" +
+          "<span class='glyphicon glyphicon-remove' />Delete" +
+          "</button>" +
+          "</td>" +
+          "</tr>";
+
+        return newRow;
+    }
+
+    function AddSupplier(item) {
+        var options = {};
+        options.url = "/api/supplier";
+        options.type = "POST";
+        var obj = supplier;
+        obj.SUPLNO = $("#supplierno").val();
+        obj.SUPLNAME = $("#suppliername").val();
+        obj.SUPLADDR = $("#supplieraddress").val();
+
+        if (obj.SUPLNO == null || obj.SUPLNO == undefined || obj.SUPLNO == '') {
+            alert('Supplier No should be empty!');
+            return false;
+        }
+
+        if (obj.SUPLNAME == null || obj.SUPLNAME == undefined || obj.SUPLNAME == '') {
+            alert('Supplier Name should be empty!');
+            return false;
+        }
+
+        console.dir(obj);
+        options.data = JSON.stringify(obj);
+        options.contentType = "application/json";
+        options.dataType = "html";
+
+        options.success = function (msg) {
+            getSupplier();
+            $("#supplierno").val("");
+            $("#suppliername").val("");
+            $("#supplieraddress").val("");
+            $("#msg").html(msg);
+        },
+          options.error = function () {
+              $("#msg").html("Error while calling the Web API!");
+          };
+        $.ajax(options);
+    }
+
+    function SupplierUpdate(item) {
+        var options = {};
+        options.url = "/api/supplier/"
+        options.type = "PUT";
+
+        var obj = supplier;
+        obj.SUPLNO = $(".input-supplierno", $(item).parent().parent()).val();
+        obj.SUPLNAME = $(".input-suppliername", $(item).parent().parent()).val();
+        obj.SUPLADDR = $(".input-supplieraddress", $(item).parent().parent()).val();
+        console.dir(obj);
+        options.data = JSON.stringify(obj);
+        options.contentType = "application/json";
+        options.dataType = "html";
+        options.success = function (msg) {
+            alert("Successfully updated supplier details");
+            $("#msg").html(msg);
+        };
+        options.error = function () {
+            $("#msg").html("Error while calling the Web API!");
+        };
+        $.ajax(options);
+    }
+
+    function DeleteSupplier(item) {
+        var supplierNo = $(item).data("supplierno");
+        var options = {};
+        options.url = "/api/supplier/DeleteSupplier?supplierNo=" + supplierNo;
+        options.type = "DELETE";
+        options.dataType = "html";
+        options.success = function (msg) {
+            console.log('msg= ' + msg);
+            $("#msg").html(msg);
+            getSupplier();
+        };
+        options.error = function (request, message, error) {
+            handleException(request, message, error);
+        };
+        $.ajax(options);
+    }
+
+    // Handle exceptions from AJAX calls
+    function handleException(request, message, error) {
+        var msg = "";
+        msg += "Code: " + request.status + "\n";
+        msg += "Text: " + request.statusText + "\n";
+        if (request.responseJSON != null) {
+            msg += "Message" + request.responseJSON.Message + "\n";
+        }
+
+        alert(msg);
+    }
+</script>
+
+<h3>Supplier Details</h3>
+
+
+<form>
+    <table id="supplierTable" class="table">
+        <thead>
+            <tr>
+                <th>Supplier No </th>
+                <th> Supplier Name</th>
+                <th> Supplier Address </th>
+                <th> Details</th>
+            </tr>
+            <tr>
+                <td><input id="supplierno" type="text" /></td>
+                <td><input id="suppliername" type="text" /></td>
+                <td><input id="supplieraddress" type="text" /></td>
+                <td><input type="button" id="insert" value="Insert" onclick='AddSupplier(this)' class="btn-primary" /></td>
+        </thead>
+    </table>
+    <br />
+    <div id="msg"></div>
+</form>
+
+<style>
+    table, th, td {
+        border: 1px solid lightgray;
+    }
+
+    th {
+        background-color: #4CAF50;
+        color: white;
+    }
+</style>

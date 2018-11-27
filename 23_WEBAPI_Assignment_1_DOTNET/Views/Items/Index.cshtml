@@ -1,0 +1,57 @@
+﻿@model IEnumerable<_23_WEBAPI_Assignment_1_DOTNET.ItemViewModel>
+
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h3>Items Details</h3>
+<hr />
+<p>
+    @Html.ActionLink("Create New", "Create")
+</p>
+<table class="table">
+    <tr>
+        <th>
+            @Html.DisplayNameFor(model => model.ITCODE)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.ITDESC)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.ITRATE)
+        </th>
+        <th></th>
+    </tr>
+
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.ITCODE)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.ITDESC)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.ITRATE)
+            </td>
+            <td>
+                @Html.ActionLink("Edit", "Edit", new { itemcode = item.ITCODE }) |
+                @Html.ActionLink("Delete", "Delete", new { itemcode = item.ITCODE })
+            </td>
+        </tr>
+    }
+    
+</table>
+
+<style>
+    table, th, td {
+        border: 1px solid lightgray;
+    }
+
+    th {
+        background-color: #4CAF50;
+        color: white;
+    }
+</style>
